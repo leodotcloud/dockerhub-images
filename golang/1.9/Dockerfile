@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     wget \
     jq \
+    git \
     iperf3 \
     bzip2 \
     ethtool \

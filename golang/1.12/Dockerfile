@@ -1,4 +1,4 @@
-FROM golang:1.8
+FROM ubuntu:xenial
 MAINTAINER leodotcloud@gmail.com
 
 RUN apt-get update && apt-get install -y \
@@ -23,6 +23,8 @@ RUN apt-get update && apt-get install -y \
     ethtool \
     openssl
 
+ENV GOLANG_VERSION 1.12.5
+
 RUN cd /tmp && \
     wget https://get.docker.com/builds/Linux/x86_64/docker-1.12.6.tgz && \
     tar xvfz docker*.tgz && \
@@ -32,6 +34,23 @@ RUN cd /tmp && \
     tar xvfj linux-amd64-github-release.tar.bz2 && \
     mv bin/linux/amd64/github-release /usr/bin/ && \
     rm -rf bin
+
+RUN curl -L https://github.com/docker/machine/releases/download/v0.13.0/docker-machine-`uname -s`-`uname -m` > /tmp/docker-machine && \
+    install /tmp/docker-machine /usr/local/bin/docker-machine
+
+RUN curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl > /tmp/kubectl && \
+    install /tmp/kubectl /usr/local/bin/kubectl
+
+RUN cd /tmp && \
+	wget https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz && \
+	tar -C /usr/local -xzf go${GOLANG_VERSION}.linux-amd64.tar.gz && \
+	rm -f go${GOLANG_VERSION}.linux-amd64.tar.gz
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+WORKDIR $GOPATH
 
 RUN mv /usr/sbin/tcpdump /usr/bin/tcpdump
 ADD set_ps1.sh /tmp/set_ps1.sh
